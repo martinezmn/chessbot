@@ -14,17 +14,18 @@ datasource db {
 }
 
 model Game {
-  id      String  @id @default(uuid())
-  ownerId String
-  guestId String?
+  id       String  @id @default(uuid()) /* @db.VarChar(36) */
+  ownerDid String
+  guestDid String?
+  board    String /* @db.VarChar(96) */
 
   invitations Invitation[]
 }
 
 model Invitation {
-  id      String @id @default(uuid())
-  gameId  String
-  guestId String
+  id       String @id @default(uuid()) /* @db.VarChar(36) */
+  gameId   String /* @db.VarChar(36) */
+  guestDid String
 
   game Game @relation(fields: [gameId], references: [id])
 }

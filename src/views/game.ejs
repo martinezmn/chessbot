@@ -1,0 +1,100 @@
+<html>
+
+<head>
+  <meta charset='utf-8' />
+  <title>App</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+
+<body x-data="game('<%= gameId %>')" x-init="connect()">
+  <div id="board" class="board">
+    <% for (let row=0; row < 8; row++) { %>
+      <div class="row">
+        <% for (let col=0; col < 8; col++) { const file=side==='black' ? String.fromCharCode(104 - col) :
+          String.fromCharCode(97 + col); const rank=side==='black' ? row + 1 : 8 - row; const id=file + rank; const
+          isWhite=(row + col) % 2===0; const colorClass=isWhite ? 'white-square' : 'black-square' ; %>
+          <div class="square <%= colorClass %>" id="<%= id %>">
+            <span class="piece" :aria-selected="selected==='<%= id %>'" :aria-movable="movable['<%= id %>']"
+              :class="board['<%= id %>']?.owner" x-show="board['<%= id %>'] || movable['<%= id %>']"
+              x-text="board['<%= id %>']?.piece"
+              x-on:click="movable['<%= id %>'] ? move('<%= id %>') : select('<%= id %>')">
+            </span>
+          </div>
+          <% } %>
+      </div>
+      <% } %>
+  </div>
+
+  <script src="/chess.js"></script>
+  <script>
+    function game(gameId) {
+      return {
+        board: {},
+        captured: [],
+        selected: undefined,
+        movable: {},
+        async connect() {
+          await new Promise(r => setTimeout(r, 2000));
+          console.log(gameId);
+          const decoded = decode(
+            'Pa2Pb2Pc2Pd2Pe2Pf2Pg2Ph2Ra1Rh1Nb1Ng1Bc1Bf1Qd1Ke1Pa7Pb7Pc7Pd7Pe7Pf7Pg7Ph7Ra8Rh8Nb8Ng8Bc8Bf8Qd8Ke8',
+          );
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          this.board = decoded.board;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          this.captured = decoded.captured;
+          // const socket = new WebSocket(`wss://yourserver.com/ws/game/${gameId}`);
+
+          // socket.onmessage = (event: MessageEvent<string>) => {
+          //   // const data = JSON.parse(event.data);
+          //   this.positions = event.data;
+
+          //   decode('asd');
+          // };
+
+          // socket.onopen = () => {
+          //   console.log('WebSocket connected');
+          // };
+
+          // socket.onerror = (error) => {
+          //   console.error('WebSocket error:', error);
+          // };
+
+          // socket.onclose = () => {
+          //   console.log('WebSocket closed');
+          // };
+        },
+        select(position) {
+          if (position === this.selected) {
+            this.selected = undefined;
+            this.movable = {};
+            return;
+          }
+          const piece = this.board[position];
+          if (!piece) {
+            return console.error('Invalid position');
+          }
+          this.selected = position;
+          this.movable = getPossibleMoves(position, this.board);
+        },
+        move(position) {
+          if (!this.movable[position]) {
+            return;
+          }
+          const capturedPiece = this.board[position];
+          if (capturedPiece) {
+            this.captured.push(capturedPiece);
+          }
+          this.board[position] = this.board[this.selected];
+          delete this.board[this.selected];
+          this.selected = undefined;
+          this.movable = {};
+        },
+      };
+    }
+  </script>
+</body>
+
+</html>
