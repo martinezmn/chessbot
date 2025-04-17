@@ -7,8 +7,11 @@ export class GameController {
 
   @Get(':id')
   @Render('game')
-  public game(@Param('id') id: string) {
-    const board = this.gameService.getGameBoard();
-    return { board, gameId: id, side: 'black' };
+  public async game(@Param('id') id: string) {
+    const board = await this.gameService.getGameBoard(id);
+    if (!board) {
+      return { error: 'Game not found' };
+    }
+    return { gameId: id, ...board };
   }
 }

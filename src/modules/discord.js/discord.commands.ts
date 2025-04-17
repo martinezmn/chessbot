@@ -16,7 +16,7 @@ export class DiscordCommands {
   })
   public async onNewGame(@Context() [interaction]: SlashCommandContext) {
     const game = await this.prisma.game.create({
-      data: { ownerId: interaction.user.id, board: boardStringConst },
+      data: { ownerDid: interaction.user.id, board: boardStringConst },
     });
 
     this.logger.log(`Game created with ID: ${game.id}`);

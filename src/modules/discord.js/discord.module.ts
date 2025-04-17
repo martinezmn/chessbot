@@ -22,4 +22,4 @@ import { PrismaService } from 'src/shared/services/prisma.service';
   ],
   providers: [PrismaService, DiscordService, DiscordCommands, DiscordButtons],
 })
-export class DiscordModule {}
+export class DiscordJSModule {}

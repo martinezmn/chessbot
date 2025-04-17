@@ -4,8 +4,33 @@ export interface ChessPiece {
 }
 
 export interface ChessBoard {
-  board: Record<string, { piece: string; owner: 'white' | 'black' }>;
+  board: Record<string, ChessPiece>;
   captured: ChessPiece[];
+}
+
+export function encode(input: ChessBoard): string {
+  const whiteParts: string[] = [];
+  const blackParts: string[] = [];
+
+  for (const [position, { piece, owner }] of Object.entries(input.board)) {
+    const part = `${piece}${position}`;
+    if (owner === 'white') {
+      whiteParts.push(part);
+    } else {
+      blackParts.push(part);
+    }
+  }
+
+  for (const { piece, owner } of input.captured) {
+    const part = `${piece}z0`;
+    if (owner === 'white') {
+      whiteParts.push(part);
+    } else {
+      blackParts.push(part);
+    }
+  }
+
+  return [...whiteParts, ...blackParts].join('');
 }
 
 export function decode(boardString: string): ChessBoard {

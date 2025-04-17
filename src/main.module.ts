@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DiscordModule } from './modules/discordjs/discord.module';
-import { GameModule } from './modules/game/game.module';
+import { DiscordJSModule } from './modules/discord.js/discord.module';
+import { GameIOModule } from './modules/game.io/game.module';
 
 @Module({
-  imports: [DiscordModule, GameModule],
+  imports: [DiscordJSModule, GameIOModule],
   controllers: [],
   providers: [],
 })

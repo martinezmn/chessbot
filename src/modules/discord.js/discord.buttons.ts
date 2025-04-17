@@ -30,14 +30,17 @@ export class DiscordButtons {
       });
     }
 
-    if (process.env.APP_ENV !== 'dev' && game.ownerId === interaction.user.id) {
+    if (
+      process.env.APP_ENV !== 'dev' &&
+      game.ownerDid === interaction.user.id
+    ) {
       return interaction.reply({
         content: 'You cannot join your own game',
         flags: MessageFlags.Ephemeral,
       });
     }
 
-    if (game.guestId) {
+    if (game.guestDid) {
       return interaction.reply({
         content: 'Game already has a guest',
         flags: MessageFlags.Ephemeral,
@@ -47,13 +50,13 @@ export class DiscordButtons {
     const invitation = await this.prisma.invitation.create({
       data: {
         gameId: game.id,
-        guestId: interaction.user.id,
+        guestDid: interaction.user.id,
       },
     });
 
     await this.prisma.game.update({
       where: { id: game.id },
-      data: { guestId: interaction.user.id },
+      data: { guestDid: interaction.user.id },
     });
 
     const button = new ButtonBuilder()
