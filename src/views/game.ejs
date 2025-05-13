@@ -30,7 +30,7 @@
 
   <script src="/chess.js"></script>
   <script>
-    function game(gameId) {
+    function game(invitationId) {
       return {
         board: {},
         captured: [],
@@ -42,7 +42,7 @@
           this.socket = io('http://localhost:3000');
 
           this.socket.on('connect', () => {
-            this.socket.emit('join', { gameId });
+            this.socket.emit('join', { invitationId });
           });
 
           this.socket.on('board', (board) => {
@@ -77,7 +77,7 @@
           delete this.board[this.selected];
           this.selected = undefined;
           this.movable = {};
-          this.socket.emit('move', { gameId,  move });
+          this.socket.emit('move', { invitationId,  move });
         },
       };
     }

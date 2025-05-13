@@ -32,32 +32,27 @@ export class GameGateway
   }
 
   @SubscribeMessage('join')
-  async handleJoinRoom(client: Socket, payload: { gameId: string }) {
-    await client.join(payload.gameId);
-    this.logger.log(`Client ${client.id} joined room ${payload.gameId}`);
-    const game = await this.gameService.getGameBoard(payload.gameId);
-    client.emit('board', game?.board);
-    this.logger.log(
-      `Client ${client.id} is in rooms: ${JSON.stringify([...client.rooms])}`,
+  async handleJoinRoom(client: Socket, payload: { invitationId: string }) {
+    const game = await this.gameService.getGameByInvitation(
+      payload.invitationId,
     );
+    await client.join(game.id);
+    this.logger.log(`Client ${client.id} joined room ${game.id}`);
+    client.emit('board', game.board);
   }
 
   @SubscribeMessage('move')
   async handleMessageToRoom(
     client: Socket,
-    payload: { gameId: string; move: string },
+    payload: { invitationId: string; move: string },
   ) {
-    this.logger.log(
-      `Client ${client.id} is in rooms: ${JSON.stringify([...client.rooms])}`,
-    );
-    const socketsInRoom = this.server.sockets.adapter.rooms.get(payload.gameId);
-    this.logger.log(
-      `Sockets in room ${payload.gameId}: ${socketsInRoom ? Array.from(socketsInRoom).join(', ') : 'None'}`,
+    const game = await this.gameService.getGameByInvitation(
+      payload.invitationId,
     );
     const [from, to] = payload.move.split(':');
-    this.logger.log(`GameId ${payload.gameId} from ${from} to ${to}`);
-    const board = await this.gameService.move(payload.gameId, from, to);
+    this.logger.log(`GameId ${game.id} from ${from} to ${to}`);
+    const board = await this.gameService.move(game.id, from, to);
     // this.server.to(payload.gameId).emit('board', board);
-    this.server.in(payload.gameId).emit('board', board);
+    this.server.in(game.id).emit('board', board);
   }
 }

@@ -19,23 +19,33 @@ export class DiscordButtons {
     @Context() [interaction]: ButtonContext,
     @ComponentParam('gameId') gameId: string,
   ) {
-    const game = await this.prisma.game.findUnique({
+    const game = await this.prisma.game.findUniqueOrThrow({
       where: { id: gameId },
     });
 
-    if (!game) {
-      return interaction.reply({
-        content: 'Game not found',
-        flags: MessageFlags.Ephemeral,
+    if (game.ownerDid === interaction.user.id) {
+      let ownerInvitation = await this.prisma.invitation.findFirst({
+        where: { gameId: game.id, guestDid: interaction.user.id },
       });
-    }
 
-    if (
-      process.env.APP_ENV !== 'dev' &&
-      game.ownerDid === interaction.user.id
-    ) {
+      if (!ownerInvitation) {
+        ownerInvitation = await this.prisma.invitation.create({
+          data: { gameId: game.id, guestDid: interaction.user.id },
+        });
+      }
+
+      const button = new ButtonBuilder()
+        .setLabel('Enter')
+        .setURL(`${process.env.APP_URL}/g/${ownerInvitation.id}`)
+        .setStyle(ButtonStyle.Link);
+
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
+
+      this.logger.log(`Invitation created with ID: ${ownerInvitation.id}`);
+
       return interaction.reply({
-        content: 'You cannot join your own game',
+        content: 'Pong!',
+        components: [row],
         flags: MessageFlags.Ephemeral,
       });
     }

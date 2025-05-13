@@ -8,23 +8,28 @@ export class GameService {
 
   public constructor(private readonly prisma: PrismaService) {}
 
-  public async getGameBoard(gameId: string) {
-    const game = await this.prisma.game.findUnique({
-      where: { id: gameId },
-    });
-
-    if (game) {
-      return { board: game.board, side: 'white' };
-    }
-
-    const invitation = await this.prisma.invitation.findUnique({
-      where: { id: gameId },
+  public async getGameByInvitation(invitationId: string) {
+    const invitation = await this.prisma.invitation.findUniqueOrThrow({
+      where: { id: invitationId },
       include: { game: true },
     });
 
-    if (invitation) {
-      return { board: invitation.game.board, side: 'black' };
+    return invitation.game;
+  }
+
+  public async getGameBoard(invitationId: string) {
+    const invitation = await this.prisma.invitation.findUniqueOrThrow({
+      where: { id: invitationId },
+      include: { game: true },
+    });
+
+    let side = 'black';
+
+    if (invitation.guestDid === invitation.game.ownerDid) {
+      side = 'white';
     }
+
+    return { board: invitation.game.board, side };
   }
 
   public async move(gameId: string, from: string, to: string) {
